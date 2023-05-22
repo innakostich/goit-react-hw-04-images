@@ -6,22 +6,21 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const Searchbar = ({ onSubmit }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (searchQuery.trim() === '') {
+    if (inputValue.trim() === '') {
       toast.error('Please enter a search query');
       return;
     }
 
-    onSubmit(searchQuery);
-    setSearchQuery('');
+    onSubmit(inputValue);
   };
 
   const handleChange = (e) => {
-    setSearchQuery(e.target.value);
+    setInputValue(e.target.value);
   };
 
   return (
@@ -37,7 +36,7 @@ const Searchbar = ({ onSubmit }) => {
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
-          value={searchQuery}
+          value={inputValue}
           onChange={handleChange}
         />
       </form>

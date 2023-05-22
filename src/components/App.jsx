@@ -15,9 +15,11 @@ const App = () => {
   const [modalImage, setModalImage] = useState('');
 
   const handleSearch = (query) => {
-    setSearchQuery(query);
-    setPage(1);
-    setImages([]);
+    if (query !== searchQuery) {
+      setSearchQuery(query);
+      setImages([]);
+      setPage(1);
+    }
   };
 
   const handleLoadMore = () => {
@@ -33,49 +35,47 @@ const App = () => {
   };
 
   useEffect(() => {
+    const fetchImages = () => {
+      if (searchQuery === '') {
+        return;
+      }
+
+      setIsLoading(true);
+
+      axios
+        .get('https://pixabay.com/api/', {
+          params: {
+            key: '34787029-9060cf1f0b6b2569d575ff8e0',
+            per_page: 12,
+            q: searchQuery,
+            page: page,
+          },
+        })
+        .then((response) => {
+          const newImages = response.data.hits.map((image) => ({
+            id: image.id,
+            webformatURL: image.webformatURL,
+            largeImageURL: image.largeImageURL,
+          }));
+          setImages((prevImages) => [...prevImages, ...newImages]);
+        })
+        .catch((error) => {
+          console.error('Error fetching images:', error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    };
+
     fetchImages();
   }, [searchQuery, page]);
-
-  const fetchImages = () => {
-    if (searchQuery === '') {
-      return;
-    }
-
-    setIsLoading(true);
-
-    axios
-      .get('https://pixabay.com/api/', {
-        params: {
-          key: '34787029-9060cf1f0b6b2569d575ff8e0',
-          per_page: 12,
-          q: searchQuery,
-          page: page,
-        },
-      })
-      .then((response) => {
-        const newImages = response.data.hits.map((image) => ({
-          id: image.id,
-          webformatURL: image.webformatURL,
-          largeImageURL: image.largeImageURL,
-        }));
-        setImages((prevImages) => [...prevImages, ...newImages]);
-      })
-      .catch((error) => {
-        console.error('Error fetching images:', error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
-
-  const showLoadMoreButton = images.length > 0 && !isLoading;
 
   return (
     <div className={css.container}>
       <Searchbar onSubmit={handleSearch} />
       <ImageGallery images={images} onItemClick={handleImageClick} />
       {isLoading && <Loader />}
-      {showLoadMoreButton && <Button onClick={handleLoadMore} />}
+      {images.length > 0 && !isLoading && <Button onClick={handleLoadMore} />}
       <Modal isOpen={modalImage !== ''} image={modalImage} onClose={handleCloseModal} />
     </div>
   );
